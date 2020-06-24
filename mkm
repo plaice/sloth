@@ -1,0 +1,33 @@
+: 'written by Martin Davis    3/5/85'
+: 'creates a module, initializing all files'
+if test ! -d $1.m
+then
+	mkdir $1.m
+fi
+if test ! -f $1.m/var.i
+then
+	cat << EOF > $1.m/var.i
+EOF
+fi
+if test ! -f $1.m/define.i
+then
+	cat << EOF > $1.m/define.i
+EOF
+fi
+if test ! -f $1.m/proc.i
+then
+	cat << EOF > $1.m/proc.i
+EOF
+fi
+if test ! -f $1.m/body.i
+then
+	cat << EOF > $1.m/body.i
+EOF
+fi
+if test ! -f $1.m/import
+then
+	cat << EOF > $1.m/import
+EOF
+fi
+
+

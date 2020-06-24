@@ -1,0 +1,9 @@
+: 'INSECURE!!!! - doesnt check if uselist etc. is out of date'
+: 'generates an executable module from a bunch of separately compiled modules'
+
+use=`cat $1.m/uselist`
+objs=`addtail '.m/prog.o' $1 ${use}`
+
+echo cc -o $1 ${objs} $1.m/main.c -lm
+cc -o $1 ${objs} $1.m/main.c -lm
+

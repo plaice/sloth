@@ -1,0 +1,13 @@
+: 'written by Martin Davis    3/5/85'
+: 'INSECURE!!!!! - doesnt check if uselist etc. is out of date'
+: 'compile object module for the single module $1'
+
+use=`cat $1.m/uselist`
+
+echo mkextern $1
+mkextern $1
+test $? -ne 0 && exit 1
+
+echo cd $1.m; echo cc -c prog.c
+( cd $1.m; cc -c prog.c )
+

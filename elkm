@@ -1,0 +1,4 @@
+# written by Martin Davis    3/5/85
+# lkm for emacs
+lkm $1 |& cserror
+

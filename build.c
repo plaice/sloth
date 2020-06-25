@@ -5,6 +5,7 @@
 /*		not created in certain situations) */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>                                                                                                       
 #include <sys/stat.h>
 #include "string.h"
@@ -20,83 +21,15 @@ static int nMods ;
 static char *markedList[MAXUSE] ;
 static int nMarked ;
 
-int BuildModule(Imports)
-char *Imports[];
- {register int i;
-  FILE *useFile,*progFile;
-  char *useName,*progName,path[MAXLINE],buffer[MAXLINE],*oldArgs[MAXUSE+2];
+static int Marked(mod)
+char *mod;
+{
+ int i;
+   for (i = 0; i < nMarked ; i++) 
+      if (stringeq(markedList[i],mod)) 
+         return(TRUE);
 	
-  oldArgs[0] = stringcat(Imports[0],".m/uselist");
-  oldArgs[1] = stringcat(Imports[0],".m/import");
-  i = 1;
-  if ((useFile = fopen(oldArgs[0],"r")) != NULL) 
-    { while (!(GetString(useFile,buffer)))    
-        { Imports[i++] = mkstring(buffer);
-          oldArgs[i] = stringcat(buffer,".m/import");
-        }
-   
-      Imports[i] = oldArgs[i + 1] = (char *)0 ;
-
-      fclose(useFile);
-    }
-
-	/* only recompute uselist if: */
-	/*	- it is out of date */
-	/* 	- the compileAll flag is set */
-	/*	- the "prog.c" is missing (this is a hack - it */
-	/*	  is not necessary to recompute the uselist, but it */
-	/* 	  is an easy way of forcing the "prog.c" file to be */
-	/*	  rewritten) */
-
-progName = stringcat(Imports[0],".m/prog.c");
-if (! Older(oldArgs) && ! compileAll && fexists(progName)) {   
-        return(TRUE);
-}
-
-  /* save working directory path */
-
-  if (getwd(path) == 0) 
-    { fprintf(stderr,"%s\n",path); 	/* path contains error msg */
-      return(FALSE);
-    }
-
-  nMods = nMarked = 0;
-
-  if (!(MakeUseList(Imports[0])))  /* if failed, there was a serious    */
-     return(FALSE);                /* error                             */
-
-  chdir(path);                /* change back to saved directory    */
-
-  /* prepare to write out list to "uselist" file */
-
-  useName = stringcat(Imports[0],".m/uselist");
-  if ((useFile = fopen(useName,"w")) == NULL) 
-    { fprintf(stderr,"Build Module : can't write %s\n",useName);
-      return(FALSE);
-    }
-
-  /* prepare to write to "prog.c" file */
-     
-  if ((progFile = fopen(progName,"w")) == NULL)
-    { fprintf(stderr,"Build Module : can't write %s\n",progName);
-      return(FALSE);
-    }
-	
-  for (i = 0; i < nMods-1 ; i++) 
-    { fprintf(useFile,"%s\n",modList[i]);
-      fprintf(progFile,"#include \"%s.m/define.i\"\n",modList[i]);
-      fprintf(progFile,"#include \"%s.m/extern.i\"\n",modList[i]);
-      Imports[i+1] = modList[i] ;
-    }
-
-  Imports[i+1] = (char *)0 ;
-
-  FinishProg(progFile,NameFile(Imports[0]));
-
-  fclose(useFile);
-  fclose(progFile);
-
-  return(TRUE);
+   return(FALSE);
 }
 
 #define NonNull(s) (*s != '\0')
@@ -153,17 +86,6 @@ char *mod;
   return(TRUE);
 }
 
-static int Marked(mod)
-char *mod;
-{
- int i;
-   for (i = 0; i < nMarked ; i++) 
-      if (stringeq(markedList[i],mod)) 
-         return(TRUE);
-	
-   return(FALSE);
-}
-
 static void FinishProg(prog,arg)
 char *arg;
 FILE *prog;
@@ -177,6 +99,85 @@ FILE *prog;
   fprintf(prog,"Init%s(argc,argv)\nint argc;\nchar *argv[];\n{\n#include \"body.i\"\n}\n",arg);
 
  }
+
+int BuildModule(Imports)
+char *Imports[];
+ {register int i;
+  FILE *useFile,*progFile;
+  char *useName,*progName,path[MAXLINE],buffer[MAXLINE],*oldArgs[MAXUSE+2];
+	
+  oldArgs[0] = stringcat(Imports[0],".m/uselist");
+  oldArgs[1] = stringcat(Imports[0],".m/import");
+  i = 1;
+  if ((useFile = fopen(oldArgs[0],"r")) != NULL) 
+    { while (!(GetString(useFile,buffer)))    
+        { Imports[i++] = mkstring(buffer);
+          oldArgs[i] = stringcat(buffer,".m/import");
+        }
+   
+      Imports[i] = oldArgs[i + 1] = (char *)0 ;
+
+      fclose(useFile);
+    }
+
+    /* only recompute uselist if: */
+    /*	- it is out of date */
+    /* 	- the compileAll flag is set */
+    /*	- the "prog.c" is missing (this is a hack - it */
+    /*	  is not necessary to recompute the uselist, but it */
+    /* 	  is an easy way of forcing the "prog.c" file to be */
+    /*	  rewritten) */
+
+    progName = stringcat(Imports[0],".m/prog.c");
+if (! Older(oldArgs) && ! compileAll && fexists(progName)) {   
+        return(TRUE);
+}
+
+  /* save working directory path */
+
+  if (getwd(path) == 0) 
+    { fprintf(stderr,"%s\n",path); 	/* path contains error msg */
+      return(FALSE);
+    }
+
+  nMods = nMarked = 0;
+
+  if (!(MakeUseList(Imports[0])))  /* if failed, there was a serious    */
+     return(FALSE);                /* error                             */
+
+  chdir(path);                /* change back to saved directory    */
+
+  /* prepare to write out list to "uselist" file */
+
+  useName = stringcat(Imports[0],".m/uselist");
+  if ((useFile = fopen(useName,"w")) == NULL) 
+    { fprintf(stderr,"Build Module : can't write %s\n",useName);
+      return(FALSE);
+    }
+
+  /* prepare to write to "prog.c" file */
+     
+  if ((progFile = fopen(progName,"w")) == NULL)
+    { fprintf(stderr,"Build Module : can't write %s\n",progName);
+      return(FALSE);
+    }
+	
+  for (i = 0; i < nMods-1 ; i++) 
+    { fprintf(useFile,"%s\n",modList[i]);
+      fprintf(progFile,"#include \"%s.m/define.i\"\n",modList[i]);
+      fprintf(progFile,"#include \"%s.m/extern.i\"\n",modList[i]);
+      Imports[i+1] = modList[i] ;
+    }
+
+  Imports[i+1] = (char *)0 ;
+
+  FinishProg(progFile,NameFile(Imports[0]));
+
+  fclose(useFile);
+  fclose(progFile);
+
+  return(TRUE);
+}
 
 /* fexists(fname) - given a filename, returns a boolean indicating */
 /* whether the file exists */

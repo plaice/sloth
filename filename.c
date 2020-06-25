@@ -50,6 +50,9 @@
 /* 			will bomb completely if this fails */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include "filename.h"
 #include "globals.h"
 
@@ -156,6 +159,26 @@ int i,j;
 	return(buffer);
 }
 
+static AddLevel(buffer,name)
+char *buffer,*name;
+/* adds "name" to the path name in "buffer" */
+{
+	(void)strcat(buffer,"/");
+	(void)strcat(buffer,name);
+}
+
+static SubtractLevel(buffer)
+char *buffer;
+/* subtracts a directory level from the pathname in buffer */
+{
+int i;
+	i = strlen(buffer) - 1;
+	while (i != 0 && buffer[i] != '/') {
+		i -= 1;
+	}
+	buffer[i] = '\0';
+}
+
 char *AbsPath(file)
 char *file;
 {
@@ -186,26 +209,6 @@ char hd[MAXLINE];
 		}
 	}
 	return(buffer);
-}
-
-static AddLevel(buffer,name)
-char *buffer,*name;
-/* adds "name" to the path name in "buffer" */
-{
-	(void)strcat(buffer,"/");
-	(void)strcat(buffer,name);
-}
-
-static SubtractLevel(buffer)
-char *buffer;
-/* subtracts a directory level from the pathname in buffer */
-{
-int i;
-	i = strlen(buffer) - 1;
-	while (i != 0 && buffer[i] != '/') {
-		i -= 1;
-	}
-	buffer[i] = '\0';
 }
 
 char *NameTail(name)

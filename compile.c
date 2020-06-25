@@ -8,7 +8,7 @@ CompileProg(List)
 char *List[];
  { char *CheckList[MAXUSE*2+7], *progfile, *ccList[5] ;
    register int pid ;
-   union wait status ;
+   int status ;
 
    progfile = OptSource(stringcat(List[0],".m/prog.c")) ;
 
@@ -45,7 +45,7 @@ char *List[];
                    return(FALSE);
 
           default: while (wait(&status) != pid) ;
-                   if (status.w_retcode)
+                   if (status)
 		      return(FALSE) ;
                    else
                       return (TRUE) ;

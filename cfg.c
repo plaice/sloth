@@ -3,6 +3,7 @@
         Original version in shell script written by Martin Davis     */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "string.h"
 #include "options.h"
 #include "globals.h"

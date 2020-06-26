@@ -1,0 +1,6 @@
+*.o
+cfg
+cserror
+lkm
+mm
+vm

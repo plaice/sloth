@@ -1,0 +1,1 @@
+int mkextern(char *argv);

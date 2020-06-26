@@ -1,0 +1,1 @@
+int BuildModule(char *Imports[]);

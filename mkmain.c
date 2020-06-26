@@ -18,9 +18,8 @@
 #include <stdio.h>
 #include "globals.h"
 #include "macros.h"
-
-char *stringcat();
-char *NameFile();
+#include "filename.h"
+#include "string.h"
 
 int
 mkmain(char *List[])

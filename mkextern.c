@@ -13,6 +13,7 @@
 #include "globals.h"
 #include "macros.h"
 #include "fileio.h"
+#include "string.h"
 
 #define READ 4  /* codes for specifying access mode to "access" */
 #define WRITE 2

@@ -19,86 +19,20 @@
 /*     g - docs        */
 
 #include <stdio.h>
-#include <signal.h>     /* KbK:Jan 23,86  include signal mutilation routines */
-                        /*                and constants                     */
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "globals.h"
+#include "filename.h"
 
 extern char **environ;
 
-char *getenv();
-
 int argPos;
-char *commandName,*command;
-
-int
-main(int argc, char *argv[])
-{
-  char *name;
-  char *code;
-  int i;
-  int label;
-  struct sigvec NewValue;  /* Kbk:Jan 25,86 To pass to sigvec routine     */
-
-#if VM
-  commandName = "vm";
-  command = getenv("VIEWER");
-  if (command == 0)
-  {
-    command = "/bin/cat";
-  }
-#else
-  commandName = "mm";
-  command = getenv("EDITOR");
-  if (command == 0)
-  {
-    command = "/usr/ucb/vi";
-  }
-#endif
-
-  if (strcmp(argv[1],"-h") == 0)
-  {
-    DoHelp();
-    exit(1);
-  }
-
-  if (argc < 3 || (argc - 1) % 2 != 0)
-  {
-    fprintf(stderr,"usage: %s vdpbciuwg module_name ...\n",commandName);
-    exit(1);
-  }
-
-  /* enable labelling if more than one file is being dealt with */
-  if ((argc > 3) || (strlen(argv[1]) > 1))
-  {
-    label = TRUE;
-  }
-  else
-  {
-    label = FALSE;
-  }
-
-  /* KbK: Jan 24,86  next 3 lines */
-  NewValue.sv_handler = SIG_IGN;
-  NewValue.sv_mask = NewValue.sv_onstack = 0;
-  sigvec(SIGINT,&NewValue,(struct sigvec *) 0 );
-
-  argPos = 1; /* points to first word of current code/name pair */
-  while (argPos < argc)
-  {
-    for (i = 0; i < strlen(argv[argPos]); i++)
-    {
-      code = argv[argPos][i];
-      name = argv[argPos + 1];
-      DoIt(code,name,label);
-    }
-    argPos += 2;
-  }
-
-  /* KbK: Jan 24,86 to restore default interrupt handler */
-  NewValue.sv_handler = SIG_DFL;
-  NewValue.sv_mask = NewValue.sv_onstack = 0;
-  sigvec(SIGINT, &NewValue, (struct sigvec *) 0);
-}
+char *commandName;
+char *command;
 
 void
 DoHelp(void)
@@ -179,7 +113,7 @@ DoIt(char code, char *name, int label)
   switch (pid = fork())
   {
     case 0:
-      execl(command,NameFile(command),buf,0);
+      execl(command, NameFile(command), buf, NULL);
       /* LATER: take command from shell variable */
       fprintf(stderr,"whoops! system error in execl\n");
       exit(1);
@@ -189,4 +123,81 @@ DoIt(char code, char *name, int label)
     default:
       while (wait(&status) != pid);
   }
+}
+
+struct sigvec {
+  void (*sv_handler)(int); /* Signal disposition */
+  int    sv_mask;          /* Signals to be blocked in handler */
+  int    sv_flags;         /* Flags */
+};
+
+
+int
+main(int argc, char *argv[])
+{
+  char *name;
+  char code;
+  int i;
+  int label;
+  struct sigvec NewValue;  /* Kbk:Jan 25,86 To pass to sigvec routine     */
+
+#if VM
+  commandName = "vm";
+  command = getenv("VIEWER");
+  if (command == 0)
+  {
+    command = "/bin/cat";
+  }
+#else
+  commandName = "mm";
+  command = getenv("EDITOR");
+  if (command == 0)
+  {
+    command = "/usr/ucb/vi";
+  }
+#endif
+
+  if (strcmp(argv[1],"-h") == 0)
+  {
+    DoHelp();
+    exit(1);
+  }
+
+  if (argc < 3 || (argc - 1) % 2 != 0)
+  {
+    fprintf(stderr,"usage: %s vdpbciuwg module_name ...\n",commandName);
+    exit(1);
+  }
+
+  /* enable labelling if more than one file is being dealt with */
+  if ((argc > 3) || (strlen(argv[1]) > 1))
+  {
+    label = TRUE;
+  }
+  else
+  {
+    label = FALSE;
+  }
+
+  /* KbK: Jan 24,86  next 3 lines */
+  NewValue.sv_handler = SIG_IGN;
+  NewValue.sv_mask = NewValue.sv_flags = 0;
+  sigvec(SIGINT, &NewValue, (struct sigvec *) NULL);
+
+  argPos = 1; /* points to first word of current code/name pair */
+  while (argPos < argc)
+  {
+    for (i = 0; i < strlen(argv[argPos]); i++)
+    {
+      code = argv[argPos][i];
+      name = argv[argPos + 1];
+      DoIt(code,name,label);
+    }
+    argPos += 2;
+  }
+
+  /* KbK: Jan 24,86 to restore default interrupt handler */
+  NewValue.sv_handler = SIG_DFL;
+  NewValue.sv_mask = NewValue.sv_flags = 0;
+  sigvec(SIGINT, &NewValue, (struct sigvec *) 0);
 }

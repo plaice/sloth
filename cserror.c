@@ -1,6 +1,10 @@
-
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include "globals.h"
+#include "fileio.h"
+#include "filename.h"
 
 /* cserror */
 /* Written by Martin Davis 3/5/85 */
@@ -14,36 +18,6 @@
 
 #define BUFLEN 4000  /* max length of input line - any extra will */
                      /* be truncated */
-
-int
-main(int argc, char *argv[])
-{
-  char buf[BUFLEN];
-  char str[1000];
-  int status;
-
-  status = 0;
-  while (status != 1)
-  {
-    status = GetStringN(stdin,buf,BUFLEN);
-    if (! (status == 1 && strlen(buf) == 0))
-    {
-      if (IsCd(buf))
-      {
-        ChDir(&buf[3]);
-        printf("%s\n",buf);
-      }
-      else if (IsError(buf))
-      {
-        PrintNewError(buf);
-      }
-      else
-      {
-        printf("%s\n",buf);
-      }
-    }
-  }
-}
 
 int
 IsCd(char *buf)
@@ -87,4 +61,34 @@ PrintNewError(char buf[])
   name[i] = '\0';
   restOfMsgPtr = i + 1;
   printf("\"%s%s\n", AbsPath(name), &buf[restOfMsgPtr]);
+}
+
+int
+main(int argc, char *argv[])
+{
+  char buf[BUFLEN];
+  char str[1000];
+  int status;
+
+  status = 0;
+  while (status != 1)
+  {
+    status = GetStringN(stdin,buf,BUFLEN);
+    if (! (status == 1 && strlen(buf) == 0))
+    {
+      if (IsCd(buf))
+      {
+        ChDir(&buf[3]);
+        printf("%s\n",buf);
+      }
+      else if (IsError(buf))
+      {
+        PrintNewError(buf);
+      }
+      else
+      {
+        printf("%s\n",buf);
+      }
+    }
+  }
 }

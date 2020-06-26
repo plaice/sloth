@@ -21,9 +21,26 @@ OBJLKM = fileio.o filename.o mkextern.o string.o older.o build.o compile.o \
 
 SRCVM = filename.c string.c mm.c
 
-OBJVM = $(LIB)/filename.o $(LIB)/string.o mm.c
+OBJVM = filename.o string.o mm_vm.o
 
-sloth : cfg lkm qdlkm mm vm cserror ecfg elkm eqdlkm mkm
+OBJMM = filename.o string.o mm_mm.o
+
+sloth : cfg lkm mm vm cserror # qdlkm ecfg elkm eqdlkm
+
+cfg: $(OBJCFG)
+	cc -o cfg $(OBJCFG)
+
+lkm: $(OBJLKM)
+	cc -o lkm $(OBJLKM)
+
+mm : $(OBJMM)
+	cc -o mm $(OBJMM)
+
+vm : $(OBJVM)
+	cc -o vm $(OBJVM)
+
+cserror : $(GLOBALSH) fileio.o filename.o cserror.o
+	cc -o cserror -I$(GLOBALS) fileio.o filename.o cserror.o
 
 lint : lintcfg lintlkm lintmm
 
@@ -36,61 +53,20 @@ lintlkm : $(SRCLKM)
 lintmm : $(SRCVM)
 	lint $(SRCVM)
 
-cfg: $(BIN)/cfg
-
-lkm: $(BIN)/lkm
-
-qdlkm: $(BIN)/qdlkm
-
-mm : $(BIN)/mm
-
-vm : $(BIN)/vm
-
-cserror : $(BIN)/cserror
-
-ecfg: $(BIN)/ecfg
-
-elkm: $(BIN)/elkm
-
-eqdlkm: $(BIN)/eqdlkm
-
-mkm: $(BIN)/mkm
-
-$(BIN)/cfg: $(OBJCFG)
-	cc -o $(BIN)/cfg $(OBJCFG)
-
-$(BIN)/lkm: $(OBJLKM)
-	cc -o $(BIN)/lkm $(OBJLKM)
-
-$(BIN)/qdcfg: qdcfg
-	cp qdcfg $(BIN)/qdcfg
-
-$(BIN)/qdlkm: qdlkm
-	cp qdlkm $(BIN)/qdlkm
-
-$(BIN)/mm : $(SRCVM)
-	cc -o $(BIN)/mm -DVM=0 $(OBJVM)
-
-$(BIN)/vm : $(SRCVM)
-	cc -o $(BIN)/vm -DVM=1 $(OBJVM)
-
-$(BIN)/cserror : $(GLOBALSH) $(LIB)/fileio.o $(LIB)/filename.o cserror.c
-	cc -o $(BIN)/cserror -I$(GLOBALS) $(LIB)/fileio.o $(LIB)/filename.o cserror.c
-
-$(BIN)/ecfg: ecfg $(BIN)/cserror
-	cp ecfg $(BIN)/ecfg
-
-$(BIN)/elkm: elkm $(BIN)/cserror
-	cp elkm $(BIN)/elkm
-
-$(BIN)/eqdcfg: eqdcfg $(BIN)/cserror
-	cp eqdcfg $(BIN)/eqdcfg
-
-$(BIN)/eqdlkm: eqdlkm $(BIN)/cserror
-	cp eqdlkm $(BIN)/eqdlkm
-
-$(BIN)/mkm: mkm
-	cp mkm $(BIN)/mkm
+#$(BIN)/ecfg: ecfg $(BIN)/cserror
+#	cp ecfg $(BIN)/ecfg
+#
+#$(BIN)/elkm: elkm $(BIN)/cserror
+#	cp elkm $(BIN)/elkm
+#
+#$(BIN)/eqdcfg: eqdcfg $(BIN)/cserror
+#	cp eqdcfg $(BIN)/eqdcfg
+#
+#$(BIN)/eqdlkm: eqdlkm $(BIN)/cserror
+#	cp eqdlkm $(BIN)/eqdlkm
+#
+#$(BIN)/mkm: mkm
+#	cp mkm $(BIN)/mkm
 
 mkmain.o : macros.h globals.h mkmain.c
 
@@ -110,5 +86,11 @@ lkm.o : globals.h lkm.c
 
 cfg.o : globals.h cfg.c
 
+mm_mm.o : mm.c
+	cc -DVM=0 -o mm_mm.o -c mm.c
+
+mm_vm.o : mm.c
+	cc -DVM=1 -o mm_vm.o -c mm.c
+
 clean:
-	rm *.o
+	rm -f *.o cfg lkm mm vm cserror

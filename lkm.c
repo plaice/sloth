@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <sys/wait.h>
 #include "string.h"
 #include "options.h"
@@ -6,6 +8,7 @@
 #include "build.h"
 #include "compile.h"
 #include "mkextern.h"
+#include "mkmain.h"
 #include "older.h"
 
 void
@@ -39,7 +42,7 @@ main (int argc, char *argv[])
   if (!(CompileProg(ImpList)))
     exit(1);
 
-  for (i = 1; ImpList[i] != (char *) 0; i++ )
+  for (i = 1; ImpList[i] != (char *) 0; i++)
   {
     UseeImpList[0] = ImpList[i];
     if (!(BuildModule(UseeImpList)))

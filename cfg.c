@@ -7,31 +7,35 @@
 #include "string.h"
 #include "options.h"
 #include "globals.h"
+#include "build.h"
+#include "compile.h"
+#include "mkextern.h"
+#include "older.h"
 
-void PrintUsage ()
+void
+PrintUsage ()
 {
-	fprintf (stderr, "usage : cfg [(one of) -g -p -O] module\n") ;
-	exit (-1) ;
+  fprintf (stderr, "usage : cfg [(one of) -g -p -O] module\n");
+  exit (-1);
 }
 
-void main (argc, argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
+{
+  int i;
+  char *UseList[MAXUSE];
 
- {  register int i;
-    char *UseList[MAXUSE] ;
+  UseList[0] = ParseArgs(argc, argv);
 
-    UseList[0] = ParseArgs(argc, argv) ;
+  if (!(BuildModule(UseList)))
+    exit(1);
 
-    if (!(BuildModule(UseList)))
-       exit(1);
+  for (i=1; UseList[i] != (char *) 0; i++)
+    if (older(stringcat(UseList[i], ".m/extern.i"),
+              stringcat(UseList[i], ".m/var.i")))
+      if (!(mkextern(UseList[i])))
+        exit(1);
 
-    for (i=1 ; UseList[i] != (char *)0 ; i++)
-       if (older(stringcat(UseList[i],".m/extern.i"),
-		 stringcat(UseList[i],".m/var.i")))
-          if (!(mkextern(UseList[i])))
-             exit(1);
-
-    if (!(CompileProg(UseList)))
-       exit(1);
-  }
+  if (!(CompileProg(UseList)))
+    exit(1);
+}

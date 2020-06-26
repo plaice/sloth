@@ -25,7 +25,7 @@ OBJVM = $(LIB)/filename.o $(LIB)/string.o mm.c
 
 sloth : cfg lkm qdlkm mm vm cserror ecfg elkm eqdlkm mkm
 
-lint : lintcfg lintlkm lintmm 
+lint : lintcfg lintlkm lintmm
 
 lintcfg : $(SRCCFG)
 	lint $(SRCCFG)
@@ -44,7 +44,7 @@ qdlkm: $(BIN)/qdlkm
 
 mm : $(BIN)/mm
 
-vm : $(BIN)/vm 
+vm : $(BIN)/vm
 
 cserror : $(BIN)/cserror
 
@@ -74,7 +74,7 @@ $(BIN)/mm : $(SRCVM)
 $(BIN)/vm : $(SRCVM)
 	cc -o $(BIN)/vm -DVM=1 $(OBJVM)
 
-$(BIN)/cserror : $(GLOBALSH) $(LIB)/fileio.o $(LIB)/filename.o cserror.c 
+$(BIN)/cserror : $(GLOBALSH) $(LIB)/fileio.o $(LIB)/filename.o cserror.c
 	cc -o $(BIN)/cserror -I$(GLOBALS) $(LIB)/fileio.o $(LIB)/filename.o cserror.c
 
 $(BIN)/ecfg: ecfg $(BIN)/cserror
@@ -92,13 +92,13 @@ $(BIN)/eqdlkm: eqdlkm $(BIN)/cserror
 $(BIN)/mkm: mkm
 	cp mkm $(BIN)/mkm
 
-mkmain.o : macros.h globals.h mkmain.c 
+mkmain.o : macros.h globals.h mkmain.c
 
-mkextern.o : macros.h globals.h mkextern.c 
+mkextern.o : macros.h globals.h mkextern.c
 
-compile.o : globals.h compile.c
+compile.o : globals.h older.h compile.c
 
-build.o : globals.h build.c 
+build.o : globals.h older.h build.c
 
 string.o : globals.h string.c
 
@@ -109,3 +109,6 @@ fileio.o : globals.h fileio.c
 lkm.o : globals.h lkm.c
 
 cfg.o : globals.h cfg.c
+
+clean:
+	rm *.o

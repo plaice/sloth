@@ -1,5 +1,5 @@
 /* mkextern */
-/* Written by Martin Davis	3/5/85 */
+/* Written by Martin Davis 3/5/85 */
 /* Completely hacked by Karl Klashinsky, 17/2/86, in order to make it */
 /* a routine, as opposed to a main program.                           */
 
@@ -9,59 +9,61 @@
 /* of the module, minus the ".m" suffix */
 
 #include <stdio.h>
+#include <unistd.h>
 #include "globals.h"
 #include "macros.h"
+#include "fileio.h"
 
-#define READ 4		/* codes for specifying access mode to "access" */
+#define READ 4  /* codes for specifying access mode to "access" */
 #define WRITE 2
 
 char *stringcat();
-int GetString();
 
-mkextern(argv)
-char *argv;
+int
+mkextern(char *argv)
 {
-char *mod,*extName,*varName,buf[1025];
-FILE *var,*ext;
+  char *mod;
+  char *extName;
+  char *varName;
+  char buf[1025];
+  FILE *var;
+  FILE *ext;
 
-        fprintf(stdout,"mkextern %s\n",argv);
+  fprintf(stdout,"mkextern %s\n",argv);
 
-	/* check that top-level module exists */
+  /* check that top-level module exists */
+  mod = stringcat(argv,".m");
+  if (access(mod,READ) != 0)
+  {
+    fprintf(stderr,"mkextern: can't find module %s\n",mod);
+    return FALSE;
+  }
 
-	mod = stringcat(argv,".m");
-	if (access(mod,READ) != 0) {
-		fprintf(stderr,"mkextern: can't find module %s\n",mod);
-		return(FALSE);
-	}
-
-	/* open "var.i" file */
-
-	varName = stringcat(mod,"/var.i");
-	if ((var = fopen(varName,"r")) == NULL) {
-		fprintf(stderr,"mkextern: can't read file %s\n",varName);
-		return(FALSE);
-	}
+  /* open "var.i" file */
+  varName = stringcat(mod,"/var.i");
+  if ((var = fopen(varName,"r")) == NULL)
+  {
+    fprintf(stderr,"mkextern: can't read file %s\n",varName);
+    return FALSE;
+  }
 
 
-	extName = stringcat(mod,"/extern.i");
-	if ((ext = fopen(extName,"w")) == NULL) {
-		fprintf(stderr,"mkextern: can't open file %s\n",extName);
-		return(FALSE);
-	}
-	
-	/* construct "extern.c" file */
+  extName = stringcat(mod,"/extern.i");
+  if ((ext = fopen(extName,"w")) == NULL)
+  {
+    fprintf(stderr,"mkextern: can't open file %s\n",extName);
+    return FALSE;
+  }
 
-        while (!(GetString(var,buf)))
-          if (isalpha(buf[0]))         /* if line starts with an alpha char,  */
-             fprintf(ext,"extern %s\n",buf);/* its probably a var declaration */
-          else 
-             fprintf(ext,"%s\n",buf);
+  /* construct "extern.c" file */
+  while (!(GetString(var,buf)))
+    if (isalpha(buf[0]))              /* if line starts with an alpha char, */
+      fprintf(ext,"extern %s\n",buf); /* it's probably a var declaration */
+    else
+      fprintf(ext,"%s\n",buf);
 
-	/*** wrap-up ****/
-
-	fclose(var);
-	fclose(ext);
-
-	return(TRUE);
+  /*** wrap-up ****/
+  fclose(var);
+  fclose(ext);
+  return TRUE;
 }
-

@@ -50,5 +50,11 @@
 /* 			will bomb completely if this fails */
 
 
-char *NameHead(),*NameTail(), *NameRoot() , *NameExt(), *NameFile(), *NameDir(),
-	*NamePath(), *AbsPath(); 
+char *NameHead(char *);
+char *NameTail(char *);
+char *NameRoot(char *);
+char *NameExt(char *);
+char *NameFile(char *);
+char *NameDir(char *);
+char *NamePath(char *);
+char *AbsPath(char *);

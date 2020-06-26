@@ -3,7 +3,7 @@
 #include "globals.h"
 
 /* cserror */
-/* Written by Martin Davis	3/5/85 */
+/* Written by Martin Davis 3/5/85 */
 
 /* parses the output from csloth compilation commands to make it usable */
 /* by emacs' "parse-errors-in-region" facility */
@@ -12,70 +12,79 @@
 /* the working directory accordingly, so that the pathnames are always */
 /* correct */
 
-#define BUFLEN 4000	/* max length of input line - any extra will */
-			/* be truncated */
+#define BUFLEN 4000  /* max length of input line - any extra will */
+                     /* be truncated */
 
-main()
+int
+main(int argc, char *argv[])
 {
-char buf[BUFLEN];
-char str[1000];
-int status;
+  char buf[BUFLEN];
+  char str[1000];
+  int status;
 
-	status = 0;
-	while (status != 1) {
-		status = GetStringN(stdin,buf,BUFLEN);
-		if (! (status == 1 && strlen(buf) == 0)) {
-			if (IsCd(buf)) {
-				ChDir(&buf[3]);
-				printf("%s\n",buf);
-			}
-			else if (IsError(buf)) {
-				PrintNewError(buf);
-			}
-			else {
-				printf("%s\n",buf);
-			}
-		}
-	}
+  status = 0;
+  while (status != 1)
+  {
+    status = GetStringN(stdin,buf,BUFLEN);
+    if (! (status == 1 && strlen(buf) == 0))
+    {
+      if (IsCd(buf))
+      {
+        ChDir(&buf[3]);
+        printf("%s\n",buf);
+      }
+      else if (IsError(buf))
+      {
+        PrintNewError(buf);
+      }
+      else
+      {
+        printf("%s\n",buf);
+      }
+    }
+  }
 }
 
-int IsCd(buf)
-char *buf;
+int
+IsCd(char *buf)
 {
-	return((strlen(buf) > 3) &&
-			buf[0] == 'c' &&
-			buf[1] == 'd' &&
-			buf[2] == ' ');
+  return (strlen(buf) > 3) &&
+         buf[0] == 'c' &&
+         buf[1] == 'd' &&
+         buf[2] == ' ';
 }
 
-ChDir(dir)
-char *dir;
+void
+ChDir(char *dir)
 {
-	if (chdir(dir) != 0) {
-		fprintf(stderr,"cserror: %s not a directory\n",dir);
-		exit(1);
-	}
+  if (chdir(dir) != 0)
+  {
+    fprintf(stderr,"cserror: %s not a directory\n",dir);
+    exit(1);
+  }
 }
 
-int IsError(buf)
-char *buf;
+int
+IsError(char *buf)
 {
-	return(buf[0] == '"');
+  return buf[0] == '"';
 }
 
-PrintNewError(buf)
-char buf[];
 /* prints error message but with absolute filename */
+void
+PrintNewError(char buf[])
 {
-char name[1000];
-int i,restOfMsgPtr;
+  char name[1000];
+  int i;
+  int restOfMsgPtr;
 
-	i = 0;
-	while (buf[i+1] != '"') {
-		name[i] = buf[i+1];
-		i += 1;
-	}
-	name[i] = '\0';
-	restOfMsgPtr = i + 1;
-	printf("\"%s%s\n",AbsPath(name),&buf[restOfMsgPtr]);
+  i = 0;
+  while (buf[i+1] != '"')
+  {
+    name[i] = buf[i+1];
+    i += 1;
+  }
+  name[i] = '\0';
+  restOfMsgPtr = i + 1;
+  printf("\"%s%s\n", AbsPath(name), &buf[restOfMsgPtr]);
 }

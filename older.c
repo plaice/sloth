@@ -4,10 +4,10 @@
 /* dependent file was last generated */
 
 /* usage: older(n,a) where */
-/*		n is the number of valid elements in the array a */
-/*		a is an array of pointers to strings.  The first string */
-/*			is the name of the dependent file, */
-/*			the remaining n-1 are the names of the parent files */
+/*        n is the number of valid elements in the array a */
+/*        a is an array of pointers to strings.  The first string */
+/*        is the name of the dependent file, */
+/*        the remaining n-1 are the names of the parent files */
 
 /* If all files exist and file is newer than all of the files a[1]..a[n] */
 /*  then false (0) is returned (i.e. DON'T regenerate) */
@@ -22,45 +22,45 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define TRUE 1	
-#define FALSE 0	
+#define TRUE 1
+#define FALSE 0
 
-int Older(a)
-char *a[];
- { struct stat f,dependent;
-   int i;
+int
+Older(char *a[])
+{
+  struct stat f;
+  struct stat dependent;
+  int i;
 
-/* debug stuff
-printf("older: ");
-for (i = 0; a[i] != (char *)0 ; i++)
-	printf("%s ",a[i]);
-*/
+  /* debug stuff
+  printf("older: ");
+  for (i = 0; a[i] != (char *) 0; i++)
+    printf("%s ",a[i]);
+  */
 
-   if (stat(a[0],&dependent) != 0) 
-      return(TRUE);
+  if (stat(a[0],&dependent) != 0)
+    return TRUE;
 
-   for (i = 1; a[i] != (char *) 0 ; i++ ) 
-      if (stat(a[i],&f) != 0) 
-         return(TRUE);
-      else 
-         if (dependent.st_mtime < f.st_mtime)
-            return(TRUE);
-	
-/* debug stuff
-printf("--- FALSE\n");
-*/
+  for (i = 1; a[i] != (char *) 0; i++)
+    if (stat(a[i],&f) != 0)
+      return TRUE;
+    else
+      if (dependent.st_mtime < f.st_mtime)
+        return TRUE;
 
-   return(FALSE);
- }
+  /* debug stuff
+  printf("--- FALSE\n");
+  */
 
-older(first,second)
-char *first,*second;
+  return FALSE;
+}
 
-{  char *List[2] ;
-
-   List[0] = first;
-   List[1] = second;
-   List[2] = (char *) 0 ;
-  
-   return(Older(List));
+int
+older(char *first, char *second)
+{
+  char *List[2];
+  List[0] = first;
+  List[1] = second;
+  List[2] = (char *) 0;
+  return Older(List);
 }
